@@ -190,6 +190,13 @@ export function workerSetPix(
       rgb = colorScale[rgbIdx];
     }
 
+    // TODO: Better handling missing data for aggregation.
+    // Check px with duplicately assigned.
+    // pixData[i * 4] = pixData[i * 4] === 0 ? rgb[0] : pixData[i * 4] = 255;
+    // pixData[i * 4 + 1] = pixData[i * 4 + 1] === 0 ? rgb[1] : pixData[i * 4] = 0;
+    // pixData[i * 4 + 2] = pixData[i * 4 + 2] === 0 ? rgb[2] : pixData[i * 4] = 0;
+    // pixData[i * 4 + 3] = pixData[i * 4 + 3] === 0 ? rgb[3] : pixData[i * 4] = 255;
+
     pixData[i * 4] = rgb[0];
     pixData[i * 4 + 1] = rgb[1];
     pixData[i * 4 + 2] = rgb[2];
@@ -255,8 +262,20 @@ export function workerSetPix(
     } else {
       // The `selectedRows` array has not been passed, so we want to use all of the tile data values,
       // in their default ordering.
+      const numCols = shape[1];
       for (let i = 0; i < data.length; i++) {
-        d = data[i];
+        // TODO: Support this when `selectedRows` is present above.
+        // TODO: Include circular layout options in a view config.
+        // TODO: Use reverse functions to retreive data index instead of pixi index.
+        let dataI = i;
+        if(true && shape) {
+          const [h, w] = shape;
+          const y = Math.floor(i / w);
+          const x = i % w;
+          const r = 500;
+          dataI = getDataIndexInCircularLayout(x, y, r, w, h);
+        }
+        d = data[dataI];
         setPixData(i, d);
       }
     }
@@ -272,6 +291,64 @@ export function workerSetPix(
   }
 
   return pixData;
+}
+// /**
+//  * 
+//  * @param {number} x 
+//  * @param {number} y 
+//  * @param {number} r 
+//  * @param {number} w 
+//  * @param {number} h 
+//  */
+// function getDataIndexInCircularLayout(x, y, r, w, h) {
+//   // TODO: Support this as a dictionary, rather than calculating everytime.
+//   let fx = Math.floor((r + y) * Math.cos(-2 * Math.PI / w * x + Math.PI * 3 / 2.0)) + r + h;
+//   let fy = Math.floor((r + y) * Math.sin(-2 * Math.PI / w * x + Math.PI * 3 / 2.0)) + r + h;
+//   // Scale to the original size (w and h).
+//   // TODO: Make circle instead of ellipse.
+//   fx = Math.round(fx / (2 * (r + h)) * w);
+//   fy = Math.round(fy / (2 * (r + h)) * h);
+//   // if(Math.random() > 0.99) console.log(fx, fy);
+//   // Get index.
+//   const i = fx + fy * w;
+//   return i;
+// }
+
+/**
+ * 
+ * @param {number} _x 
+ * @param {number} _y 
+ * @param {number} r 
+ * @param {number} w 
+ * @param {number} h 
+ */
+function getDataIndexInCircularLayout(x, y, r, w, h) {
+  const _y = y / h * (r + h) * 2 - r - h
+  const _x = x / w * (r + h) * 2 - r - h
+  
+  let fx, fy
+  if(_y < 0) {
+    const con = Math.acos(_x / Math.sqrt(_x * _x + _y * _y));
+    if(Math.PI / 2.0  <= con && con < Math.PI) {
+        fx = -w / 2 / Math.PI * (2 * Math.PI - Math.acos(_x / Math.sqrt(_x * _x + _y * _y))) + 3 / 4 * w;
+      }
+      else if(0 <= con && con < Math.PI / 2.0){
+        fx = -w / 2 / Math.PI * (2 * Math.PI - Math.acos(_x / Math.sqrt(_x * _x + _y * _y))) + 7 / 4 * w;
+      }
+      else {
+        console.log("Something wrong");
+      }
+  } else {
+    fx = -w / 2 / Math.PI * Math.acos(_x / Math.sqrt(_x * _x + _y * _y)) + 3 / 4 * w;
+  }
+  fy = r + h - Math.sqrt(_x * _x + _y * _y);
+  
+  fx = Math.round(fx);
+  fy = Math.round(fy);
+  // if(Math.random() > 0.99) console.log(fx, fy);
+  // Get index.
+  const i = fx + fy * w;
+  return i;
 }
 
 function float32(h) {

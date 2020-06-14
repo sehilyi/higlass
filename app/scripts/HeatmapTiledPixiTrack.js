@@ -1111,29 +1111,29 @@ class HeatmapTiledPixiTrack extends TiledPixiTrack {
     this.renderTile(tile);
   }
 
-  // /**
-  //  * Draw a border around tiles
-  //  *
-  //  * @param  {Array}  pixData  Pixel data to be adjusted
-  //  */
-  // addBorder(pixData) {
-  //   for (let i = 0; i < 256; i++) {
-  //     if (i === 0) {
-  //       const prefix = i * 256 * 4;
-  //       for (let j = 0; j < 255; j++) {
-  //         pixData[prefix + (j * 4)] = 0;
-  //         pixData[prefix + (j * 4) + 1] = 0;
-  //         pixData[prefix + (j * 4) + 2] = 255;
-  //         pixData[prefix + (j * 4) + 3] = 255;
-  //       }
-  //     }
-  //     pixData[(i * 256 * 4)] = 0;
-  //     pixData[(i * 256 * 4) + 1] = 0;
-  //     pixData[(i * 256 * 4) + 2] = 255;
-  //     pixData[(i * 256 * 4) + 3] = 255;
-  //   }
-  // }
-  //
+  /**
+   * Draw a border around tiles
+   *
+   * @param  {Array}  pixData  Pixel data to be adjusted
+   */
+  addBorder(pixData) {
+    for (let i = 0; i < 256; i++) {
+      if (i === 0) {
+        const prefix = i * 256 * 4;
+        for (let j = 0; j < 255; j++) {
+          pixData[prefix + (j * 4)] = 0;
+          pixData[prefix + (j * 4) + 1] = 0;
+          pixData[prefix + (j * 4) + 2] = 255;
+          pixData[prefix + (j * 4) + 3] = 255;
+        }
+      }
+      pixData[(i * 256 * 4)] = 0;
+      pixData[(i * 256 * 4) + 1] = 0;
+      pixData[(i * 256 * 4) + 2] = 255;
+      pixData[(i * 256 * 4) + 3] = 255;
+    }
+  }
+  
   updateTile(tile) {
     if (
       tile.scale &&
@@ -1197,6 +1197,11 @@ class HeatmapTiledPixiTrack extends TiledPixiTrack {
         // the tileData has been converted to pixData by the worker script and
         // needs to be loaded as a sprite
         if (pixData) {
+
+          // TODO: Remove before release
+          // add a border to each tile to debug
+          this.addBorder(pixData.pixData);
+
           const { graphics } = tile;
           const canvas = this.tileDataToCanvas(pixData.pixData);
 
@@ -1210,7 +1215,7 @@ class HeatmapTiledPixiTrack extends TiledPixiTrack {
             GLOBALS.PIXI.VERSION[0] === '4'
               ? GLOBALS.PIXI.Texture.fromCanvas(
                   canvas,
-                  GLOBALS.PIXI.SCALE_MODES.NEAREST
+                  GLOBALS.PIXI.SCALE_MODES.NEAREST // LINEAR to blur
                 )
               : GLOBALS.PIXI.Texture.from(canvas, {
                   scaleMode: GLOBALS.PIXI.SCALE_MODES.NEAREST
