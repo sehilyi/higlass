@@ -131,7 +131,7 @@ export default class HorizontalMultivecTrack extends HeatmapTiledPixiTrack {
     }
 
     const tiles = this.xTiles.map(x => [this.zoomLevel, x]);
-
+    console.log('HorizontalMultivecTrack.calculateVisibleTiles.tiles', tiles);
     this.setVisibleTiles(tiles);
   }
 

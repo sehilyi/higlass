@@ -266,13 +266,12 @@ export function workerSetPix(
       for (let i = 0; i < data.length; i++) {
         // TODO: Support this when `selectedRows` is present above.
         // TODO: Include circular layout options in a view config.
-        // TODO: Use reverse functions to retreive data index instead of pixi index.
         let dataI = i;
-        if(true && shape) {
+        if (true && shape) {
           const [h, w] = shape;
           const y = Math.floor(i / w);
           const x = i % w;
-          const r = 500;
+          const r = 100;
           dataI = getDataIndexInCircularLayout(x, y, r, w, h);
         }
         d = data[dataI];
@@ -293,12 +292,12 @@ export function workerSetPix(
   return pixData;
 }
 // /**
-//  * 
-//  * @param {number} x 
-//  * @param {number} y 
-//  * @param {number} r 
-//  * @param {number} w 
-//  * @param {number} h 
+//  *
+//  * @param {number} x
+//  * @param {number} y
+//  * @param {number} r
+//  * @param {number} w
+//  * @param {number} h
 //  */
 // function getDataIndexInCircularLayout(x, y, r, w, h) {
 //   // TODO: Support this as a dictionary, rather than calculating everytime.
@@ -315,34 +314,40 @@ export function workerSetPix(
 // }
 
 /**
- * 
- * @param {number} _x 
- * @param {number} _y 
- * @param {number} r 
- * @param {number} w 
- * @param {number} h 
+ *
+ * @param {number} _x
+ * @param {number} _y
+ * @param {number} r
+ * @param {number} w
+ * @param {number} h
  */
 function getDataIndexInCircularLayout(x, y, r, w, h) {
-  const _y = y / h * (r + h) * 2 - r - h
-  const _x = x / w * (r + h) * 2 - r - h
-  
-  let fx, fy
-  if(_y < 0) {
+  const _y = (y / h) * (r + h) * 2 - r - h;
+  const _x = (x / w) * (r + h) * 2 - r - h;
+
+  let fx, fy;
+  if (_y < 0) {
     const con = Math.acos(_x / Math.sqrt(_x * _x + _y * _y));
-    if(Math.PI / 2.0  <= con && con < Math.PI) {
-        fx = -w / 2 / Math.PI * (2 * Math.PI - Math.acos(_x / Math.sqrt(_x * _x + _y * _y))) + 3 / 4 * w;
-      }
-      else if(0 <= con && con < Math.PI / 2.0){
-        fx = -w / 2 / Math.PI * (2 * Math.PI - Math.acos(_x / Math.sqrt(_x * _x + _y * _y))) + 7 / 4 * w;
-      }
-      else {
-        console.log("Something wrong");
-      }
+    if (Math.PI / 2.0 <= con && con < Math.PI) {
+      fx =
+        (-w / 2 / Math.PI) *
+          (2 * Math.PI - Math.acos(_x / Math.sqrt(_x * _x + _y * _y))) +
+        (3 / 4) * w;
+    } else if (0 <= con && con < Math.PI / 2.0) {
+      fx =
+        (-w / 2 / Math.PI) *
+          (2 * Math.PI - Math.acos(_x / Math.sqrt(_x * _x + _y * _y))) +
+        (7 / 4) * w;
+    } else {
+      console.log('Something wrong');
+    }
   } else {
-    fx = -w / 2 / Math.PI * Math.acos(_x / Math.sqrt(_x * _x + _y * _y)) + 3 / 4 * w;
+    fx =
+      (-w / 2 / Math.PI) * Math.acos(_x / Math.sqrt(_x * _x + _y * _y)) +
+      (3 / 4) * w;
   }
   fy = r + h - Math.sqrt(_x * _x + _y * _y);
-  
+
   fx = Math.round(fx);
   fy = Math.round(fy);
   // if(Math.random() > 0.99) console.log(fx, fy);

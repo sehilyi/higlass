@@ -317,6 +317,10 @@ class TiledPixiTrack extends PixiTrack {
   }
 
   visibleAndFetchedTiles() {
+    console.log(
+      'visibleAndFetchedTiles',
+      this.visibleAndFetchedIds().map(x => this.fetchedTiles[x])
+    );
     return this.visibleAndFetchedIds().map(x => this.fetchedTiles[x]);
   }
 

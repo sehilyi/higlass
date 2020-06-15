@@ -36,7 +36,7 @@ const BRUSH_HEIGHT = 4;
 const BRUSH_COLORBAR_GAP = 1;
 const BRUSH_MARGIN = 4;
 const SCALE_LIMIT_PRECISION = 5;
-const BINS_PER_TILE = 256;
+const BINS_PER_TILE = 256 * 2; // TODO:
 const COLORBAR_AREA_WIDTH =
   COLORBAR_WIDTH +
   COLORBAR_LABELS_WIDTH +
@@ -347,7 +347,7 @@ class HeatmapTiledPixiTrack extends TiledPixiTrack {
     // haven't changed rerender will force a brush.move
     const strOptions = JSON.stringify(options);
     this.drawColorbar();
-
+    console.log('HeatmapTiledPixiTrack.renderer() 1');
     if (!force && strOptions === this.prevOptions) return;
 
     this.prevOptions = strOptions;
@@ -361,7 +361,10 @@ class HeatmapTiledPixiTrack extends TiledPixiTrack {
     if (options && options.colorRange) {
       this.colorScale = colorDomainToRgbaArray(options.colorRange);
     }
-
+    console.log(
+      'HeatmapTiledPixiTrack.renderer() 2',
+      this.visibleAndFetchedTiles()
+    );
     this.visibleAndFetchedTiles().forEach(tile => this.renderTile(tile));
 
     // hopefully draw isn't rerendering all the tiles
@@ -1107,7 +1110,7 @@ class HeatmapTiledPixiTrack extends TiledPixiTrack {
     if (this.scale.minValue === null || this.scale.maxValue === null) {
       return;
     }
-
+    console.log('HeatmapTiledPixiTrack.initTile()');
     this.renderTile(tile);
   }
 
@@ -1117,23 +1120,23 @@ class HeatmapTiledPixiTrack extends TiledPixiTrack {
    * @param  {Array}  pixData  Pixel data to be adjusted
    */
   addBorder(pixData) {
-    for (let i = 0; i < 256; i++) {
+    for (let i = 0; i < this.binsPerTile(); i++) {
       if (i === 0) {
-        const prefix = i * 256 * 4;
-        for (let j = 0; j < 255; j++) {
-          pixData[prefix + (j * 4)] = 0;
-          pixData[prefix + (j * 4) + 1] = 0;
-          pixData[prefix + (j * 4) + 2] = 255;
-          pixData[prefix + (j * 4) + 3] = 255;
+        const prefix = i * this.binsPerTile() * 4;
+        for (let j = 0; j < this.binsPerTile() - 1; j++) {
+          pixData[prefix + j * 4] = 0;
+          pixData[prefix + j * 4 + 1] = 0;
+          pixData[prefix + j * 4 + 2] = 255;
+          pixData[prefix + j * 4 + 3] = 255;
         }
       }
-      pixData[(i * 256 * 4)] = 0;
-      pixData[(i * 256 * 4) + 1] = 0;
-      pixData[(i * 256 * 4) + 2] = 255;
-      pixData[(i * 256 * 4) + 3] = 255;
+      pixData[i * this.binsPerTile() * 4] = 0;
+      pixData[i * this.binsPerTile() * 4 + 1] = 0;
+      pixData[i * this.binsPerTile() * 4 + 2] = 255;
+      pixData[i * this.binsPerTile() * 4 + 3] = 255;
     }
   }
-  
+
   updateTile(tile) {
     if (
       tile.scale &&
@@ -1144,6 +1147,7 @@ class HeatmapTiledPixiTrack extends TiledPixiTrack {
       // already rendered properly, no need to rerender
     } else {
       // not rendered using the current scale, so we need to rerender
+      console.log('HeatmapTiledPixiTrack.updateTile()');
       this.renderTile(tile);
       this.drawColorbar();
     }
@@ -1186,7 +1190,8 @@ class HeatmapTiledPixiTrack extends TiledPixiTrack {
         tile.tileData.dense = newArray;
       }
     }
-
+    console.log('this.tilesetInfo', this.tilesetInfo);
+    console.log('tile', tile);
     tileProxy.tileDataToPixData(
       tile,
       scaleType,
@@ -1197,7 +1202,6 @@ class HeatmapTiledPixiTrack extends TiledPixiTrack {
         // the tileData has been converted to pixData by the worker script and
         // needs to be loaded as a sprite
         if (pixData) {
-
           // TODO: Remove before release
           // add a border to each tile to debug
           this.addBorder(pixData.pixData);
