@@ -6,6 +6,7 @@ import { tileProxy } from './services';
 import selectedItemsToSize from './utils/selected-items-to-size';
 import selectedItemsToCumWeights from './utils/selected-items-to-cum-weights';
 import getAggregationFunction from './utils/get-aggregation-function';
+import { IS_CIRCULAR } from './worker';
 
 export default class HorizontalMultivecTrack extends HeatmapTiledPixiTrack {
   constructor(context, options) {
@@ -39,8 +40,13 @@ export default class HorizontalMultivecTrack extends HeatmapTiledPixiTrack {
         this.options.selectRowsAggregationWithRelativeHeight
       );
     } else if (this.tilesetInfo.shape) {
-      canvas.width = this.tilesetInfo.shape[0];
-      canvas.height = this.tilesetInfo.shape[1];
+      if (IS_CIRCULAR) {
+        canvas.width = this.tilesetInfo.shape[0]; //*2;
+        canvas.height = this.tilesetInfo.shape[1]; //*2;
+      } else {
+        canvas.width = this.tilesetInfo.shape[0];
+        canvas.height = this.tilesetInfo.shape[1];
+      }
     } else {
       canvas.width = this.tilesetInfo.tile_size; // , pixData.length / 4);
       canvas.height = 1;
@@ -68,10 +74,12 @@ export default class HorizontalMultivecTrack extends HeatmapTiledPixiTrack {
 
     const tileEndX = tileX + tileWidth;
 
-    sprite.width = this._refXScale(tileEndX) - this._refXScale(tileX);
+    sprite.width = IS_CIRCULAR
+      ? this.dimensions[0]
+      : this._refXScale(tileEndX) - this._refXScale(tileX);
     sprite.height = this.dimensions[1];
 
-    sprite.x = this._refXScale(tileX);
+    sprite.x = IS_CIRCULAR ? 0 : this._refXScale(tileX);
     sprite.y = 0;
   }
 
@@ -89,10 +97,10 @@ export default class HorizontalMultivecTrack extends HeatmapTiledPixiTrack {
   zoomed(newXScale, newYScale, k, tx) {
     super.zoomed(newXScale, newYScale);
 
-    this.pMain.position.x = tx; // translateX;
+    this.pMain.position.x = IS_CIRCULAR ? this.position[0] : tx; // translateX;
     this.pMain.position.y = this.position[1]; // translateY;
 
-    this.pMain.scale.x = k; // scaleX;
+    this.pMain.scale.x = IS_CIRCULAR ? 1 : k; // scaleX;
     this.pMain.scale.y = 1; // scaleY;
 
     this.drawColorbar();
@@ -131,7 +139,7 @@ export default class HorizontalMultivecTrack extends HeatmapTiledPixiTrack {
     }
 
     const tiles = this.xTiles.map(x => [this.zoomLevel, x]);
-    console.log('HorizontalMultivecTrack.calculateVisibleTiles.tiles', tiles);
+    // console.log('HorizontalMultivecTrack.calculateVisibleTiles.tiles', tiles);
     this.setVisibleTiles(tiles);
   }
 

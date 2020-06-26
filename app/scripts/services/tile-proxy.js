@@ -517,7 +517,8 @@ export const tileDataToPixData = (
   zeroValueColor,
   selectedRows,
   selectedRowsAggregationMode,
-  selectedRowsAggregationWithRelativeHeight
+  selectedRowsAggregationWithRelativeHeight,
+  isCircularLayout // TODO: Use this
 ) => {
   const { tileData } = tile;
 

@@ -9,6 +9,8 @@ import DenseDataExtrema2D from './utils/DenseDataExtrema2D';
 import { tileProxy } from './services';
 import { minNonZero, maxNonZero } from './worker';
 
+import { IS_CIRCULAR } from './worker';
+
 export default class DataFetcher {
   constructor(dataConfig, pubSub) {
     this.tilesetInfoLoading = true;
@@ -210,12 +212,23 @@ export default class DataFetcher {
       promise.then(returnedTiles => {
         const tilesetUid = dictValues(returnedTiles)[0].tilesetUid;
         const newTiles = {};
+        if (IS_CIRCULAR) {
+          // TODO:
+          for (let i = 0; i < tileIds.length; i++) {
+            const fullTileId = this.fullTileId(tilesetUid, tileIds[i]);
 
-        for (let i = 0; i < tileIds.length; i++) {
-          const fullTileId = this.fullTileId(tilesetUid, tileIds[i]);
+            returnedTiles[fullTileId].tilePositionId = tileIds[i]; // what is this doing?
+            newTiles[tileIds[i]] = returnedTiles[fullTileId];
+            newTiles[tileIds[i]]['order'] = i;
+            // console.log('newTiles[tileIds[i]]', newTiles[tileIds[i]]);
+          }
+        } else {
+          for (let i = 0; i < tileIds.length; i++) {
+            const fullTileId = this.fullTileId(tilesetUid, tileIds[i]);
 
-          returnedTiles[fullTileId].tilePositionId = tileIds[i];
-          newTiles[tileIds[i]] = returnedTiles[fullTileId];
+            returnedTiles[fullTileId].tilePositionId = tileIds[i];
+            newTiles[tileIds[i]] = returnedTiles[fullTileId];
+          }
         }
 
         receivedTiles(newTiles);

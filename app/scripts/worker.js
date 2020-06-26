@@ -135,6 +135,7 @@ export function workerSetPix(
   }
 
   let filteredSize = size;
+
   if (shape && selectedRows) {
     // If using the `selectedRows` parameter, then the size of the `pixData` array
     // will likely be different than `size` (the total size of the tile data array).
@@ -149,7 +150,8 @@ export function workerSetPix(
   let rgb;
   let rgbIdx = 0;
   const tileWidth = Math.sqrt(size);
-  const pixData = new Uint8ClampedArray(filteredSize * 4);
+  const dataSize = filteredSize * 4; // * (IS_CIRCULAR ? 16 : 1);
+  const pixData = new Uint8ClampedArray(dataSize);
 
   /**
    * Set the ith element of the pixData array, using value d.
@@ -262,16 +264,15 @@ export function workerSetPix(
     } else {
       // The `selectedRows` array has not been passed, so we want to use all of the tile data values,
       // in their default ordering.
-      const numCols = shape[1];
-      for (let i = 0; i < data.length; i++) {
+      for (let i = 0; i < dataSize; i++) {
         // TODO: Support this when `selectedRows` is present above.
         // TODO: Include circular layout options in a view config.
         let dataI = i;
-        if (true && shape) {
+        if (IS_CIRCULAR && shape) {
           const [h, w] = shape;
           const y = Math.floor(i / w);
           const x = i % w;
-          const r = 100;
+          const r = 200;
           dataI = getDataIndexInCircularLayout(x, y, r, w, h);
         }
         d = data[dataI];
@@ -313,6 +314,8 @@ export function workerSetPix(
 //   return i;
 // }
 
+export const IS_CIRCULAR = true; // TODO: get this from view config
+
 /**
  *
  * @param {number} _x
@@ -322,10 +325,11 @@ export function workerSetPix(
  * @param {number} h
  */
 function getDataIndexInCircularLayout(x, y, r, w, h) {
-  const _y = (y / h) * (r + h) * 2 - r - h;
-  const _x = (x / w) * (r + h) * 2 - r - h;
+  const _y = (y / (h * 1)) * (r + h) * 2 - r - h;
+  const _x = (x / (w * 1)) * (r + h) * 2 - r - h;
 
-  let fx, fy;
+  let fx;
+  let fy;
   if (_y < 0) {
     const con = Math.acos(_x / Math.sqrt(_x * _x + _y * _y));
     if (Math.PI / 2.0 <= con && con < Math.PI) {
@@ -333,7 +337,7 @@ function getDataIndexInCircularLayout(x, y, r, w, h) {
         (-w / 2 / Math.PI) *
           (2 * Math.PI - Math.acos(_x / Math.sqrt(_x * _x + _y * _y))) +
         (3 / 4) * w;
-    } else if (0 <= con && con < Math.PI / 2.0) {
+    } else if (con >= 0 && con < Math.PI / 2.0) {
       fx =
         (-w / 2 / Math.PI) *
           (2 * Math.PI - Math.acos(_x / Math.sqrt(_x * _x + _y * _y))) +

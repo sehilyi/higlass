@@ -36,7 +36,7 @@ const BRUSH_HEIGHT = 4;
 const BRUSH_COLORBAR_GAP = 1;
 const BRUSH_MARGIN = 4;
 const SCALE_LIMIT_PRECISION = 5;
-const BINS_PER_TILE = 256 * 2; // TODO:
+const BINS_PER_TILE = 256; // TODO:
 const COLORBAR_AREA_WIDTH =
   COLORBAR_WIDTH +
   COLORBAR_LABELS_WIDTH +
@@ -347,7 +347,7 @@ class HeatmapTiledPixiTrack extends TiledPixiTrack {
     // haven't changed rerender will force a brush.move
     const strOptions = JSON.stringify(options);
     this.drawColorbar();
-    console.log('HeatmapTiledPixiTrack.renderer() 1');
+    // console.log('HeatmapTiledPixiTrack.renderer() 1');
     if (!force && strOptions === this.prevOptions) return;
 
     this.prevOptions = strOptions;
@@ -361,10 +361,10 @@ class HeatmapTiledPixiTrack extends TiledPixiTrack {
     if (options && options.colorRange) {
       this.colorScale = colorDomainToRgbaArray(options.colorRange);
     }
-    console.log(
-      'HeatmapTiledPixiTrack.renderer() 2',
-      this.visibleAndFetchedTiles()
-    );
+    // console.log(
+    //   'HeatmapTiledPixiTrack.renderer() 2',
+    //   this.visibleAndFetchedTiles()
+    // );
     this.visibleAndFetchedTiles().forEach(tile => this.renderTile(tile));
 
     // hopefully draw isn't rerendering all the tiles
@@ -1110,7 +1110,7 @@ class HeatmapTiledPixiTrack extends TiledPixiTrack {
     if (this.scale.minValue === null || this.scale.maxValue === null) {
       return;
     }
-    console.log('HeatmapTiledPixiTrack.initTile()');
+    // console.log('HeatmapTiledPixiTrack.initTile()');
     this.renderTile(tile);
   }
 
@@ -1147,7 +1147,7 @@ class HeatmapTiledPixiTrack extends TiledPixiTrack {
       // already rendered properly, no need to rerender
     } else {
       // not rendered using the current scale, so we need to rerender
-      console.log('HeatmapTiledPixiTrack.updateTile()');
+      // console.log('HeatmapTiledPixiTrack.updateTile()');
       this.renderTile(tile);
       this.drawColorbar();
     }
@@ -1173,6 +1173,7 @@ class HeatmapTiledPixiTrack extends TiledPixiTrack {
    * @param {Object}  tile  Tile data to be rendered.
    */
   renderTile(tile) {
+    // console.log("renderTiel(tile)");
     const [scaleType] = this.updateValueScale();
     const pseudocount = 0;
 
@@ -1190,8 +1191,8 @@ class HeatmapTiledPixiTrack extends TiledPixiTrack {
         tile.tileData.dense = newArray;
       }
     }
-    console.log('this.tilesetInfo', this.tilesetInfo);
-    console.log('tile', tile);
+    // console.log('this.tilesetInfo', this.tilesetInfo);
+    // console.log('tile', tile);
     tileProxy.tileDataToPixData(
       tile,
       scaleType,
@@ -1253,7 +1254,8 @@ class HeatmapTiledPixiTrack extends TiledPixiTrack {
         : undefined,
       this.options.selectRows,
       this.options.selectRowsAggregationMode,
-      this.options.selectRowsAggregationWithRelativeHeight
+      this.options.selectRowsAggregationWithRelativeHeight,
+      true // circular layout
     );
   }
 
