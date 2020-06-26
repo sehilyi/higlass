@@ -7,9 +7,9 @@ import DenseDataExtrema2D from './utils/DenseDataExtrema2D';
 
 // Services
 import { tileProxy } from './services';
-import { minNonZero, maxNonZero } from './worker';
+import { minNonZero, maxNonZero , IS_CIRCULAR } from './worker';
 
-import { IS_CIRCULAR } from './worker';
+
 
 export default class DataFetcher {
   constructor(dataConfig, pubSub) {
@@ -219,7 +219,7 @@ export default class DataFetcher {
 
             returnedTiles[fullTileId].tilePositionId = tileIds[i]; // what is this doing?
             newTiles[tileIds[i]] = returnedTiles[fullTileId];
-            newTiles[tileIds[i]]['order'] = i;
+            newTiles[tileIds[i]].order = i;
             // console.log('newTiles[tileIds[i]]', newTiles[tileIds[i]]);
           }
         } else {

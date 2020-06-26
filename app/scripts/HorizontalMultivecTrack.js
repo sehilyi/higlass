@@ -41,8 +41,8 @@ export default class HorizontalMultivecTrack extends HeatmapTiledPixiTrack {
       );
     } else if (this.tilesetInfo.shape) {
       if (IS_CIRCULAR) {
-        canvas.width = this.tilesetInfo.shape[0]; //*2;
-        canvas.height = this.tilesetInfo.shape[1]; //*2;
+        canvas.width = this.tilesetInfo.shape[0]; //* 2;
+        canvas.height = this.tilesetInfo.shape[1]; //* 2;
       } else {
         canvas.width = this.tilesetInfo.shape[0];
         canvas.height = this.tilesetInfo.shape[1];
